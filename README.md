@@ -8,8 +8,6 @@ The canonical Python library for managing Qwen3.6's thinking state across sessio
 
 ## What It Solves
 
-Three problems nobody has solved yet:
-
 1. **Backend Normalization** — Qwen3.6's `enable_thinking` flag has three different invocation patterns across backends. This library normalizes them into a single API.
 
 2. **Atomic Sampling Swap** — Qwen3.6 requires *different* sampling parameters for thinking vs. non-thinking mode. A router that flips `enable_thinking` without also swapping params produces silently degraded output.
