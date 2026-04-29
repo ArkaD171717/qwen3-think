@@ -1,4 +1,4 @@
-# qwen3-think
+# Qwen3-Think
 
 **The Thinking Session Manager for Qwen3.6** (or any Qwen3+ model that uses enable_thinking) — SDK + Router + Bug Fixes
 
