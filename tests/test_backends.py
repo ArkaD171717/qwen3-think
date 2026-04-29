@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 
 from qwen_think.backends import (
     DashScopeBackend,
@@ -6,6 +7,7 @@ from qwen_think.backends import (
     OpenAIBackend,
     VLLMBackend,
     detect_backend,
+    get_backend,
 )
 from qwen_think.backends.vllm import SGLangBackend
 from qwen_think.types import Backend, ThinkingMode
@@ -133,3 +135,98 @@ class TestAutoDetection:
     def test_unknown_url_raises(self):
         with pytest.raises(ValueError, match="Could not auto-detect"):
             detect_backend("http://totally-unknown:9999/api")
+
+
+# ---------------------------------------------------------------------------
+# get_backend: unknown backend path (registry miss)
+# ---------------------------------------------------------------------------
+
+class TestGetBackend:
+    def test_unknown_backend_raises(self):
+        """Clearing the registry exposes the defensive ValueError."""
+        with patch.dict("qwen_think.backends._BACKEND_REGISTRY", {}, clear=True):
+            with pytest.raises(ValueError, match="Unknown backend"):
+                get_backend(Backend.VLLM)
+
+
+# ---------------------------------------------------------------------------
+# Additional VLLMBackend coverage
+# ---------------------------------------------------------------------------
+
+class TestVLLMBackendExtra:
+    def setup_method(self):
+        self.b = VLLMBackend()
+
+    def test_detect_none_url_returns_zero(self):
+        assert self.b.detect(None) == 0.0
+
+    def test_extra_body_chat_template_kwargs_merged(self):
+        """User-supplied chat_template_kwargs are merged into the payload."""
+        p = self.b.build_payload(
+            ThinkingMode.THINK,
+            extra_body={
+                "chat_template_kwargs": {"custom_key": "value"},
+                "other_key": 42,
+            },
+        )
+        ctk = p.extra_body["chat_template_kwargs"]
+        assert ctk["custom_key"] == "value"
+        assert p.extra_body["other_key"] == 42
+
+
+# ---------------------------------------------------------------------------
+# Additional DashScopeBackend coverage
+# ---------------------------------------------------------------------------
+
+class TestDashScopeBackendExtra:
+    def setup_method(self):
+        self.b = DashScopeBackend()
+
+    def test_detect_none_url_returns_zero(self):
+        assert self.b.detect(None) == 0.0
+
+    def test_no_think_message_warning(self):
+        """Message containing /no_think triggers a deprecation warning."""
+        p = self.b.build_payload(
+            ThinkingMode.THINK,
+            messages=[{"role": "user", "content": "/no_think do this"}],
+        )
+        assert any("/no_think" in w for w in p.warnings)
+
+
+# ---------------------------------------------------------------------------
+# Additional LlamaCppBackend coverage
+# ---------------------------------------------------------------------------
+
+class TestLlamaCppBackendExtra:
+    def test_server_thinking_none_defaults_true(self):
+        """LlamaCppBackend() with no arg treats server as enable_thinking=True."""
+        b = LlamaCppBackend()
+        p = b.build_payload(ThinkingMode.THINK)
+        assert p.enable_thinking is True
+
+    def test_detect_none_url_returns_zero(self):
+        b = LlamaCppBackend()
+        assert b.detect(None) == 0.0
+
+    def test_extra_body_merging(self):
+        """User-supplied chat_template_kwargs and other keys are merged."""
+        b = LlamaCppBackend()
+        p = b.build_payload(
+            ThinkingMode.THINK,
+            extra_body={
+                "chat_template_kwargs": {"custom": "val"},
+                "other": 1,
+            },
+        )
+        assert p.extra_body["chat_template_kwargs"]["custom"] == "val"
+        assert p.extra_body["other"] == 1
+
+    def test_no_think_message_warning(self):
+        """Message containing /no_think triggers a deprecation warning."""
+        b = LlamaCppBackend()
+        p = b.build_payload(
+            ThinkingMode.THINK,
+            messages=[{"role": "user", "content": "/no_think something"}],
+        )
+        assert any("/no_think" in w or "/think" in w for w in p.warnings)
