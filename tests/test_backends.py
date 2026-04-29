@@ -229,4 +229,4 @@ class TestLlamaCppBackendExtra:
             ThinkingMode.THINK,
             messages=[{"role": "user", "content": "/no_think something"}],
         )
-        assert any("/no_think" in w or "/think" in w for w in p.warnings)
+        assert any("/no_think" in w for w in p.warnings)
