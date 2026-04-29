@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from qwen_think.session import ThinkingSession
-from qwen_think.types import Backend, BudgetAction, ThinkingMode
+from qwen_think.types import Backend, BudgetAction, Complexity, ThinkingMode
 
 
 def _mock_client(content="response", thinking="reasoning"):
@@ -147,3 +147,134 @@ class TestThinkingSession:
         kwargs = client.chat.completions.create.call_args.kwargs
         msgs = kwargs["messages"]
         assert msgs[0] == {"role": "system", "content": "be concise"}
+
+    # -----------------------------------------------------------------------
+    # Init: no base_url on client → defaults to vLLM (lines 82-83)
+    # -----------------------------------------------------------------------
+
+    def test_init_no_base_url_defaults_vllm(self):
+        client = MagicMock()
+        client.base_url = None  # falsy → triggers the else branch
+        s = ThinkingSession(client)
+        assert s.backend == Backend.VLLM
+
+    # -----------------------------------------------------------------------
+    # budget_status property (line 110)
+    # -----------------------------------------------------------------------
+
+    def test_budget_status_property(self):
+        s = ThinkingSession(_mock_client(), backend="vllm")
+        status = s.budget_status
+        assert status.action == BudgetAction.OK
+        assert status.total_tokens == 200_000
+
+    # -----------------------------------------------------------------------
+    # COMPRESS auto-trim during chat (lines 128-129)
+    # -----------------------------------------------------------------------
+
+    def test_chat_triggers_compress_and_trims(self):
+        """Filling the session to the COMPRESS zone causes auto-trim before the call."""
+        client = _mock_client()
+        s = ThinkingSession(
+            client, backend="vllm", budget=200_000, min_context=128_000
+        )
+        # compress_threshold = 128K * 1.15 = 147,200
+        # 110,000 chars * 0.5 tok/char = 55,000 tokens used
+        # available = 145,000 < 147,200 → COMPRESS
+        s.add_message("user", "x" * 110_000)
+        s.chat("hello")  # Should trigger COMPRESS trim then succeed
+        # After trim + new exchange: history contains at least the new user msg
+        assert any(m.content == "hello" for m in s.messages)
+
+    # -----------------------------------------------------------------------
+    # Complexity override inside auto-route path (line 147)
+    # -----------------------------------------------------------------------
+
+    def test_chat_complexity_override_in_auto_route(self):
+        """auto_route=True with explicit complexity= overrides the detected value."""
+        client = _mock_client()
+        s = ThinkingSession(client, backend="vllm", auto_route=True)
+        # "What is 2+2?" would normally be SIMPLE; override to COMPLEX
+        s.chat("What is 2+2?", complexity=Complexity.COMPLEX)
+        assert len(s.messages) == 2
+
+    # -----------------------------------------------------------------------
+    # auto_route=False path (line 157)
+    # -----------------------------------------------------------------------
+
+    def test_chat_auto_route_false(self):
+        """When auto_route=False and no explicit mode, the session's current mode is used."""
+        client = _mock_client()
+        s = ThinkingSession(client, backend="vllm", auto_route=False)
+        s.chat("implement something")
+        kwargs = client.chat.completions.create.call_args.kwargs
+        assert "extra_body" in kwargs
+        assert len(s.messages) == 2
+
+    # -----------------------------------------------------------------------
+    # Payload warnings are logged (line 177)
+    # -----------------------------------------------------------------------
+
+    def test_chat_payload_warning_does_not_raise(self):
+        """LlamaCpp in NO_THINK mode always emits warnings; chat should still succeed."""
+        client = _mock_client()
+        # Use llamacpp backend — NO_THINK always emits a known-issue warning
+        s = ThinkingSession(client, backend="llamacpp")
+        s.chat("hello", mode=ThinkingMode.NO_THINK)
+        assert any(m.role == "user" for m in s.messages)
+
+    # -----------------------------------------------------------------------
+    # set_backend (lines 210-213)
+    # -----------------------------------------------------------------------
+
+    def test_set_backend_string(self):
+        s = ThinkingSession(_mock_client(), backend="vllm")
+        s.set_backend("sglang")
+        assert s.backend == Backend.SGLANG
+
+    def test_set_backend_enum(self):
+        s = ThinkingSession(_mock_client(), backend="vllm")
+        s.set_backend(Backend.DASHSCOPE)
+        assert s.backend == Backend.DASHSCOPE
+
+    # -----------------------------------------------------------------------
+    # get_openai_messages with include_thinking=True (line 249)
+    # -----------------------------------------------------------------------
+
+    def test_get_openai_messages_with_thinking(self):
+        s = ThinkingSession(_mock_client(), backend="vllm")
+        s.chat("hello")
+        messages = s.get_openai_messages(include_thinking=True)
+        # The assistant message should include reasoning_content
+        assistant_msgs = [m for m in messages if m["role"] == "assistant"]
+        assert len(assistant_msgs) == 1
+        assert assistant_msgs[0].get("reasoning_content") == "reasoning"
+
+    # -----------------------------------------------------------------------
+    # _store_response: empty choices list (line 294)
+    # -----------------------------------------------------------------------
+
+    def test_store_response_empty_choices(self):
+        """When the API returns no choices, no assistant message is stored."""
+        client = MagicMock()
+        client.base_url = "http://localhost:8000/v1"
+        resp = MagicMock()
+        resp.choices = []
+        client.chat.completions.create.return_value = resp
+
+        s = ThinkingSession(client, backend="vllm")
+        s.chat("hello")
+        assert len(s.messages) == 1
+        assert s.messages[0].role == "user"
+
+    # -----------------------------------------------------------------------
+    # __len__ (line 327)
+    # -----------------------------------------------------------------------
+
+    def test_len(self):
+        s = ThinkingSession(_mock_client(), backend="vllm")
+        assert len(s) == 0
+        s.add_message("user", "hello")
+        assert len(s) == 1
+        s.add_message("assistant", "hi")
+        assert len(s) == 2
