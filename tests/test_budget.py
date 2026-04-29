@@ -1,6 +1,11 @@
 import pytest
 
-from qwen_think.budget import BudgetManager, estimate_tokens, truncate_text
+from qwen_think.budget import (
+    BudgetManager,
+    estimate_tokens,
+    truncate_old_messages,
+    truncate_text,
+)
 from qwen_think.types import BudgetAction, Message
 
 
@@ -14,6 +19,10 @@ def test_estimate_tokens_positive():
 
 def test_truncate_text_short_passthrough():
     assert truncate_text("hi") == "hi"
+
+
+def test_truncate_text_empty_string():
+    assert truncate_text("") == ""
 
 
 def test_truncate_text_long_gets_ellipsis():
@@ -128,3 +137,14 @@ class TestBudgetManager:
         status = self.bm.check_budget([msg])
         assert status.action == BudgetAction.WARN
         assert "166" in status.message  # warn_threshold ≈ 166,400
+
+
+# ---------------------------------------------------------------------------
+# truncate_old_messages: early-return when len(messages) <= keep_recent
+# ---------------------------------------------------------------------------
+
+def test_truncate_old_messages_under_limit():
+    """When fewer messages than keep_recent, the original list is returned."""
+    msgs = [Message(role="user", content="hello")]
+    result = truncate_old_messages(msgs, keep_recent=4)
+    assert result is msgs  # Same object — early return, nothing copied

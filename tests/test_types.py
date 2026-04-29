@@ -75,3 +75,32 @@ def test_message_no_thinking():
     msg = Message(role="user", content="hi")
     d = msg.to_openai_dict(include_thinking=True)
     assert "reasoning_content" not in d
+
+
+# ---------------------------------------------------------------------------
+# BackendPayload.has_warnings
+# ---------------------------------------------------------------------------
+
+def test_backend_payload_has_warnings_false():
+    from qwen_think.types import BackendPayload
+
+    p = BackendPayload()
+    assert p.has_warnings is False
+
+
+def test_backend_payload_has_warnings_true():
+    from qwen_think.types import BackendPayload
+
+    p = BackendPayload(warnings=["something went wrong"])
+    assert p.has_warnings is True
+
+
+# ---------------------------------------------------------------------------
+# BudgetStatus.usage_ratio edge case: total_tokens == 0
+# ---------------------------------------------------------------------------
+
+def test_budget_status_usage_ratio_zero_total():
+    from qwen_think.types import BudgetStatus
+
+    status = BudgetStatus(total_tokens=0, used_tokens=0)
+    assert status.usage_ratio == 0.0
