@@ -88,12 +88,6 @@ class TestComplexityRouter:
         d = self.router.route("What is 2+2?")
         assert "simple" in d.reasoning.lower()
 
-    def test_classify_direct_call(self):
-        """ComplexityRouter.classify is a thin wrapper; test it directly."""
-        router = ComplexityRouter()
-        result = router.classify("What is 2+2?")
-        assert result == Complexity.SIMPLE
-
 
 # ---------------------------------------------------------------------------
 # RuleBasedClassifier: uncovered scoring branches

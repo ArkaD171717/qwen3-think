@@ -150,15 +150,21 @@ class TestGetBackend:
 
 
 # ---------------------------------------------------------------------------
+# detect(None) returns 0.0 for all backends (None guard branch)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("backend_cls", [VLLMBackend, DashScopeBackend, LlamaCppBackend])
+def test_detect_none_url_returns_zero(backend_cls):
+    assert backend_cls().detect(None) == 0.0
+
+
+# ---------------------------------------------------------------------------
 # Additional VLLMBackend coverage
 # ---------------------------------------------------------------------------
 
 class TestVLLMBackendExtra:
     def setup_method(self):
         self.b = VLLMBackend()
-
-    def test_detect_none_url_returns_zero(self):
-        assert self.b.detect(None) == 0.0
 
     def test_extra_body_chat_template_kwargs_merged(self):
         """User-supplied chat_template_kwargs are merged into the payload."""
@@ -182,9 +188,6 @@ class TestDashScopeBackendExtra:
     def setup_method(self):
         self.b = DashScopeBackend()
 
-    def test_detect_none_url_returns_zero(self):
-        assert self.b.detect(None) == 0.0
-
     def test_no_think_message_warning(self):
         """Message containing /no_think triggers a deprecation warning."""
         p = self.b.build_payload(
@@ -204,10 +207,6 @@ class TestLlamaCppBackendExtra:
         b = LlamaCppBackend()
         p = b.build_payload(ThinkingMode.THINK)
         assert p.enable_thinking is True
-
-    def test_detect_none_url_returns_zero(self):
-        b = LlamaCppBackend()
-        assert b.detect(None) == 0.0
 
     def test_extra_body_merging(self):
         """User-supplied chat_template_kwargs and other keys are merged."""
