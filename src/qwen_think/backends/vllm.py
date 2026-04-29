@@ -18,7 +18,6 @@ class VLLMBackend(BaseBackend):
 
     backend = Backend.VLLM
 
-    # URL patterns that suggest a vLLM server
     _VLLM_PATTERNS = [
         r"vllm",
         r":8000",  # vLLM default port
@@ -66,6 +65,13 @@ class VLLMBackend(BaseBackend):
                     )
                     break
 
+        if preserve_thinking and enable_thinking:
+            warnings.append(
+                "preserve_thinking + vLLM prefix caching is an untested "
+                "combination. If you see degraded reasoning across turns, "
+                "try --no-enable-prefix-caching on your vLLM server."
+            )
+
         return BackendPayload(
             enable_thinking=enable_thinking,
             preserve_thinking=preserve_thinking,
@@ -75,6 +81,11 @@ class VLLMBackend(BaseBackend):
         )
 
     def detect(self, base_url: Optional[str] = None) -> float:
+        """Score 0.0-1.0 for how likely this URL is a vLLM server.
+
+        0.6 = keyword/port match, 0.3 = generic /v1 endpoint.
+        DashScope scores 0.9 so it wins when both could match.
+        """
         if base_url is None:
             return 0.0
 

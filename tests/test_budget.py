@@ -14,7 +14,9 @@ def test_estimate_tokens_empty():
 
 
 def test_estimate_tokens_positive():
-    assert estimate_tokens("hello world") > 0
+    # estimate_tokens uses: max(1, int(len(text) * 0.5))
+    # "hello world" is 11 chars -> int(11 * 0.5) = 5
+    assert estimate_tokens("hello world") == 5
 
 
 def test_truncate_text_short_passthrough():
@@ -28,8 +30,9 @@ def test_truncate_text_empty_string():
 def test_truncate_text_long_gets_ellipsis():
     long = "x" * 5000
     result = truncate_text(long, max_tokens=50)
+    # max_chars = int(50 / 0.5) = 100, truncated = text[:97] + "..."
     assert result.endswith("...")
-    assert len(result) < len(long)
+    assert len(result) == 100
 
 
 def _make_msg(chars: int) -> Message:
@@ -47,23 +50,23 @@ class TestBudgetManager:
 
     def test_warn_triggers(self):
         # warn_threshold = 128K * 1.30 = 166,400
-        # available = 155K → used = 45K → 90,000 chars (at 0.5 tok/char)
-        # 155K < 166,400 → WARN
-        msg = _make_msg(100_000)  # ~50K tokens → 150K available
+        # available = 155K -> used = 45K -> 90,000 chars (at 0.5 tok/char)
+        # 155K < 166,400 -> WARN
+        msg = _make_msg(100_000)  # ~50K tokens -> 150K available
         status = self.bm.check_budget([msg])
         assert status.action == BudgetAction.WARN
 
     def test_compress_triggers(self):
         # compress_threshold = 128K * 1.15 = 147,200
-        # 130,000 chars → 65K tokens → 135K available
-        # 135K < 147,200 → COMPRESS
+        # 130,000 chars -> 65K tokens -> 135K available
+        # 135K < 147,200 -> COMPRESS
         msg = _make_msg(130_000)
         status = self.bm.check_budget([msg])
         assert status.action == BudgetAction.COMPRESS
 
     def test_refuse_triggers(self):
-        # 160,000 chars → 80K tokens → 120K available
-        # 120K < 128K → REFUSE
+        # 160,000 chars -> 80K tokens -> 120K available
+        # 120K < 128K -> REFUSE
         msg = _make_msg(160_000)
         status = self.bm.check_budget([msg])
         assert status.action == BudgetAction.REFUSE
@@ -136,15 +139,10 @@ class TestBudgetManager:
         msg = _make_msg(100_000)
         status = self.bm.check_budget([msg])
         assert status.action == BudgetAction.WARN
-        assert "166" in status.message  # warn_threshold ≈ 166,400
+        assert "166" in status.message  # warn_threshold ~ 166,400
 
-
-# ---------------------------------------------------------------------------
-# truncate_old_messages: early-return when len(messages) <= keep_recent
-# ---------------------------------------------------------------------------
 
 def test_truncate_old_messages_under_limit():
-    """When fewer messages than keep_recent, the original list is returned."""
     msgs = [Message(role="user", content="hello")]
     result = truncate_old_messages(msgs, keep_recent=4)
-    assert result is msgs  # Same object — early return, nothing copied
+    assert result is msgs

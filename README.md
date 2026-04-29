@@ -1,18 +1,16 @@
 # Qwen3-Think
 
-**The Thinking Session Manager for Qwen3.6** (or any Qwen3+ model that uses enable_thinking) — SDK + Router + Bug Fixes
+**The Thinking Session Manager for Qwen3.6** (or any Qwen3+ model that uses enable_thinking) -- SDK + Router + Bug Fixes
 
 Python library for managing Qwen3.6's thinking state across sessions, backends, and frameworks.
 
-**[Colab Notebook](../qwen_think_colab.ipynb)** — end-to-end test harness (unit tests + live GPU tests)
-
 ## What It Solves
 
-1. **Backend Normalization** — Qwen3.6's `enable_thinking` flag has three different invocation patterns across backends. This library normalizes them into a single API.
+1. **Backend Normalization** -- Qwen3.6's `enable_thinking` flag has three different invocation patterns across backends. This library normalizes them into a single API.
 
-2. **Sampling Parameter Swap** — Qwen3.6 requires *different* sampling parameters for thinking vs. non-thinking mode. A router that flips `enable_thinking` without also swapping params produces silently degraded output.
+2. **Sampling Parameter Swap** -- Qwen3.6 requires *different* sampling parameters for thinking vs. non-thinking mode. A router that flips `enable_thinking` without also swapping params produces silently degraded output.
 
-3. **Context Budget Guard** — Qwen3.6 advises maintaining at least 128K tokens of context to preserve thinking capabilities. This library tracks and guards against silent degradation.
+3. **Context Budget Guard** -- Qwen3.6 advises maintaining at least 128K tokens of context to preserve thinking capabilities. This library tracks and guards against silent degradation.
 
 ## Installation
 
@@ -49,7 +47,7 @@ response = session.chat("refactor this module", preserve=True)
 
 When `use_reasoning: false` is configured, the router *removes* the field instead of explicitly setting `enable_thinking: false`. Since Qwen3.6 thinks by default, removing the field has no effect.
 
-**Fix**: This library always explicitly sets the boolean — never omits it.
+**Fix**: This library always explicitly sets the boolean -- never omits it.
 
 ### Ray Serve (#52979)
 
@@ -63,7 +61,7 @@ Qwen3.6 requires different sampling params depending on thinking mode:
 
 **Thinking mode:**
 ```python
-temperature=1.0, top_p=0.95, top_k=20, min_p=0.0,
+temperature=0.6, top_p=0.95, top_k=20, min_p=0.0,
 presence_penalty=1.5, repetition_penalty=1.0
 ```
 
@@ -73,7 +71,7 @@ temperature=0.7, top_p=0.80, top_k=20, min_p=0.0,
 presence_penalty=1.5
 ```
 
-A router that flips `enable_thinking` without atomically swapping these params produces **silently degraded output** — not incorrect, just suboptimal in ways that don't surface as errors.
+A router that flips `enable_thinking` without atomically swapping these params produces **silently degraded output** -- not incorrect, just suboptimal in ways that don't surface as errors.
 
 ## Context Budget
 
@@ -86,13 +84,14 @@ Qwen3.6 advises maintaining a context length of at least **128K tokens** to pres
 ```python
 session = ThinkingSession(client, budget=200_000, min_context=128_000)
 status = session.budget_status
-# BudgetStatus(total_tokens=200000, used_tokens=45000, available_tokens=155000,
-#              action=BudgetAction.OK, message="Context usage: 22.5%...")
+# BudgetStatus(total_tokens=200000, used_tokens=10000, available_tokens=190000,
+#              min_context=128000, action=BudgetAction.OK,
+#              message="Available: 190,000 of 200,000 tokens.")
 ```
 
 ## Thinking Preservation
 
-Qwen3.6 introduces `preserve_thinking` — a feature that retains thinking context across conversation history, improving reasoning quality for iterative development.
+Qwen3.6 introduces `preserve_thinking` -- a feature that retains thinking context across conversation history, improving reasoning quality for iterative development.
 
 ```python
 session = ThinkingSession(client, preserve_thinking=True)
@@ -143,8 +142,8 @@ session.chat("quick answer", mode=ThinkingMode.NO_THINK)
 session.chat("refactor this module")
 
 # Check current state
-session.thinking_mode  # → ThinkingMode.THINK
-session.budget_status  # → BudgetStatus(...)
+session.thinking_mode  # -> ThinkingMode.THINK
+session.budget_status  # -> BudgetStatus(...)
 ```
 
 ## License

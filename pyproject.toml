@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "qwen-think"
 version = "0.1.1"
-description = "The canonical Python library for managing Qwen3.6's thinking state across sessions, backends, and frameworks."
+description = "Thinking session manager for Qwen3.6: backend normalization, sampling parameter swap, and 128K context budget guard."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.9"
 authors = [
-    { name = "qwen-think contributors" },
+    { name = "ArkaD171717" },
 ]
 keywords = [
     "qwen",
@@ -41,8 +41,7 @@ classifiers = [
 
 [project.optional-dependencies]
 openai = ["openai>=1.0.0"]
-tiktoken = ["tiktoken>=0.5.0"]
-dev = ["pytest>=7.0", "pytest-asyncio>=0.21", "ruff>=0.1.0"]
+dev = ["pytest>=7.0", "ruff>=0.1.0"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/qwen_think"]

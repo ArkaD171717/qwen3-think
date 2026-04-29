@@ -1,14 +1,21 @@
 # Dev tools
 CLAUDE.md
+.claude/
+.cursorrules
+.cursor/
+*.tar
+*.zip
 
 # Python
 __pycache__/
+.ruff_cache/
 *.py[cod]
 *.egg-info/
 dist/
 build/
 .coverage
 htmlcov/
+.pytest_cache/
 
 # Virtual environments
 .venv/
@@ -19,6 +26,14 @@ venv/
 .vscode/
 *.swp
 
+# Secrets
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+
 # OS
 .DS_Store
 Thumbs.db
+Desktop.ini

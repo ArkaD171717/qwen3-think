@@ -37,7 +37,7 @@ def test_sampling_config_frozen():
 
 def test_sampling_config_to_dict():
     d = THINKING_SAMPLING.to_dict()
-    assert d["temperature"] == 1.0
+    assert d["temperature"] == 0.6
     assert d["top_p"] == 0.95
     assert d["top_k"] == 20
 
@@ -76,28 +76,6 @@ def test_message_no_thinking():
     d = msg.to_openai_dict(include_thinking=True)
     assert "reasoning_content" not in d
 
-
-# ---------------------------------------------------------------------------
-# BackendPayload.has_warnings
-# ---------------------------------------------------------------------------
-
-def test_backend_payload_has_warnings_false():
-    from qwen_think.types import BackendPayload
-
-    p = BackendPayload()
-    assert p.has_warnings is False
-
-
-def test_backend_payload_has_warnings_true():
-    from qwen_think.types import BackendPayload
-
-    p = BackendPayload(warnings=["something went wrong"])
-    assert p.has_warnings is True
-
-
-# ---------------------------------------------------------------------------
-# BudgetStatus.usage_ratio edge case: total_tokens == 0
-# ---------------------------------------------------------------------------
 
 def test_budget_status_usage_ratio_zero_total():
     from qwen_think.types import BudgetStatus

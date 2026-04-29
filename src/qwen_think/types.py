@@ -48,7 +48,7 @@ class BudgetAction(str, enum.Enum):
 class SamplingConfig:
     """Sampling parameters that must stay in sync with the thinking mode."""
 
-    temperature: float = 1.0
+    temperature: float = 0.6
     top_p: float = 0.95
     top_k: int = 20
     min_p: float = 0.0
@@ -67,7 +67,7 @@ class SamplingConfig:
 
 
 THINKING_SAMPLING = SamplingConfig(
-    temperature=1.0,
+    temperature=0.6,
     top_p=0.95,
     top_k=20,
     min_p=0.0,
@@ -99,10 +99,6 @@ class BackendPayload:
     sampling: Dict[str, Any] = field(default_factory=dict)
     warnings: List[str] = field(default_factory=list)
 
-    @property
-    def has_warnings(self) -> bool:
-        return len(self.warnings) > 0
-
 
 @dataclass
 class BudgetStatus:
@@ -111,7 +107,7 @@ class BudgetStatus:
     total_tokens: int = 0
     used_tokens: int = 0
     available_tokens: int = 0
-    min_context: int = 128_000  # 128K — Alibaba's recommended minimum
+    min_context: int = 128_000  # 128K -- Alibaba's recommended minimum
     action: BudgetAction = BudgetAction.OK
     message: str = ""
 
@@ -134,7 +130,6 @@ class Message:
     content: str = ""
     thinking_content: Optional[str] = None
     token_count: int = 0
-    preserved: bool = True  # Whether thinking was preserved
 
     def to_openai_dict(self, *, include_thinking: bool = False) -> Dict[str, Any]:
         msg: Dict[str, Any] = {"role": self.role, "content": self.content}
@@ -151,5 +146,5 @@ class RouterDecision:
     mode: ThinkingMode
     preserve_thinking: bool
     sampling: SamplingConfig
-    confidence: float = 1.0  # 0.0–1.0 confidence of classification
+    confidence: float = 1.0  # 0.0-1.0 confidence of classification
     reasoning: str = ""  # Why this decision was made

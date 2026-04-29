@@ -36,7 +36,7 @@ def get_backend(backend: Backend, **kwargs) -> BaseBackend:
 def detect_backend(base_url: str) -> BaseBackend:
     """Auto-detect the backend from a base URL.
 
-    Raises ValueError if no backend matches the URL — callers should
+    Raises ValueError if no backend matches the URL -- callers should
     fall back to a default or ask the user to specify explicitly.
     """
     candidates: List[tuple[float, BaseBackend]] = []

@@ -131,7 +131,7 @@ Respond with exactly one word: SIMPLE, MODERATE, or COMPLEX"""
     def __init__(
         self,
         client: Optional[Any] = None,
-        model: str = "Qwen3.5-0.8B",
+        model: str = "Qwen/Qwen3-0.6B",
         fallback: Optional[RuleBasedClassifier] = None,
     ) -> None:
         self.client = client

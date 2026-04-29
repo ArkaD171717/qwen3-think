@@ -117,7 +117,7 @@ class ThinkingSession:
         preserve: Optional[bool] = None,
         complexity: Optional[Complexity] = None,
         system: Optional[str] = None,
-        max_tokens: int = 8192,
+        max_tokens: int = 8192,  # Qwen3.6 default; matches vLLM/SGLang typical max_new_tokens
         stream: bool = False,
         **kwargs: Any,
     ) -> Any:
@@ -195,7 +195,7 @@ class ThinkingSession:
 
         if stream:
             logger.debug(
-                "Streaming response — call add_message() after consuming "
+                "Streaming response -- call add_message() after consuming "
                 "the stream to keep history in sync."
             )
         else:
@@ -309,7 +309,6 @@ class ThinkingSession:
                 if thinking_content
                 else 0
             ),
-            preserved=decision.preserve_thinking,
         )
         self._messages.append(assistant_msg)
 

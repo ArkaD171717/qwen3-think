@@ -10,12 +10,16 @@ from .types import BudgetAction, BudgetStatus, Message
 logger = logging.getLogger("qwen-think.budget")
 
 DEFAULT_MIN_CONTEXT = 128_000
+# Warn at 30% above min_context (166K), compress at 15% above (147K).
+# These give ~2 turns of warning before forced trimming at 128K.
 WARN_RATIO = 0.3
 COMPRESS_RATIO = 0.15
 # Midpoint between English (~0.25 tok/char) and CJK (~1.0 tok/char).
 # Qwen's tokenizer skews toward CJK; this errs on the side of overestimating
 # token count, which is the safe direction for a budget guard.
 AVG_TOKENS_PER_CHAR = 0.5
+# Truncated messages keep ~200 tokens (~400 chars) of context --
+# enough for the model to recall the topic without wasting budget.
 COMPRESSED_MESSAGE_MAX_TOKENS = 200
 
 
@@ -36,7 +40,7 @@ def truncate_text(text: str, max_tokens: int = COMPRESSED_MESSAGE_MAX_TOKENS) ->
 
 def truncate_old_messages(
     messages: List[Message],
-    keep_recent: int = 4,
+    keep_recent: int = 4,  # 2 user-assistant pairs to preserve conversation flow
     max_tokens_per_message: int = COMPRESSED_MESSAGE_MAX_TOKENS,
 ) -> List[Message]:
     if len(messages) <= keep_recent:
@@ -61,7 +65,6 @@ def truncate_old_messages(
                     thinking_content=new_thinking,
                     token_count=estimate_tokens(new_content)
                     + (estimate_tokens(new_thinking) if new_thinking else 0),
-                    preserved=msg.preserved,
                 )
             )
 
@@ -155,7 +158,7 @@ class BudgetManager:
         freed = original_tokens - new_tokens
 
         logger.info(
-            "Trimmed conversation: %d → %d tokens (freed %d)",
+            "Trimmed conversation: %d -> %d tokens (freed %d)",
             original_tokens,
             new_tokens,
             freed,
