@@ -138,7 +138,11 @@ class TestRuleBasedClassifierBranches:
 
     def test_three_to_four_sentences_adds_one(self):
         """3–4 sentences add +1 (elif sentence_count > 2 branch)."""
+        import re
+
         query = "This is sentence one. This is sentence two. This is sentence three."
+        sentence_count = len(re.split(r"[.!?]+", query))
+        assert 2 < sentence_count <= 4, f"expected 3-4 parts, got {sentence_count}"
         result = self.clf.classify(query)
         # 3 sentences (4 parts after split) → +1 → MODERATE
         assert result == Complexity.MODERATE
