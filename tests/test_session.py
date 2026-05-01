@@ -175,9 +175,7 @@ class TestThinkingSession:
     def test_chat_triggers_compress_and_trims(self):
         """Filling the session to the COMPRESS zone causes auto-trim before the call."""
         client = _mock_client()
-        s = ThinkingSession(
-            client, backend="vllm", budget=200_000, min_context=128_000
-        )
+        s = ThinkingSession(client, backend="vllm", budget=200_000, min_context=128_000)
         # compress_threshold = 128K * 1.15 = 147,200
         # 110,000 chars * 0.5 tok/char = 55,000 tokens used
         # available = 145,000 < 147,200 → COMPRESS
