@@ -1,6 +1,5 @@
-from unittest.mock import patch
-
 import pytest
+from unittest.mock import patch
 
 from qwen_think.backends import (
     DashScopeBackend,
@@ -138,11 +137,6 @@ class TestAutoDetection:
             detect_backend("http://totally-unknown:9999/api")
 
 
-# ---------------------------------------------------------------------------
-# get_backend: unknown backend path (registry miss)
-# ---------------------------------------------------------------------------
-
-
 class TestGetBackend:
     def test_unknown_backend_raises(self):
         """Clearing the registry exposes the defensive ValueError."""
@@ -151,21 +145,9 @@ class TestGetBackend:
                 get_backend(Backend.VLLM)
 
 
-# ---------------------------------------------------------------------------
-# detect(None) returns 0.0 for all backends (None guard branch)
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.parametrize(
-    "backend_cls", [VLLMBackend, DashScopeBackend, LlamaCppBackend]
-)
+@pytest.mark.parametrize("backend_cls", [VLLMBackend, DashScopeBackend, LlamaCppBackend])
 def test_detect_none_url_returns_zero(backend_cls):
     assert backend_cls().detect(None) == 0.0
-
-
-# ---------------------------------------------------------------------------
-# Additional VLLMBackend coverage
-# ---------------------------------------------------------------------------
 
 
 class TestVLLMBackendExtra:
@@ -186,11 +168,6 @@ class TestVLLMBackendExtra:
         assert p.extra_body["other_key"] == 42
 
 
-# ---------------------------------------------------------------------------
-# Additional DashScopeBackend coverage
-# ---------------------------------------------------------------------------
-
-
 class TestDashScopeBackendExtra:
     def setup_method(self):
         self.b = DashScopeBackend()
@@ -202,11 +179,6 @@ class TestDashScopeBackendExtra:
             messages=[{"role": "user", "content": "/no_think do this"}],
         )
         assert any("/no_think" in w for w in p.warnings)
-
-
-# ---------------------------------------------------------------------------
-# Additional LlamaCppBackend coverage
-# ---------------------------------------------------------------------------
 
 
 class TestLlamaCppBackendExtra:

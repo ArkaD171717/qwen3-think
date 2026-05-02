@@ -110,12 +110,11 @@ class TestBudgetManager:
         )
         msgs = [msg] * 10
         trimmed = self.bm.trim(msgs, keep_recent=2)
-        # Trimmed messages should have lower token counts that include
-        # both content and thinking_content
+        # Old messages (first 8) should have reduced token counts after
+        # truncation of long thinking_content
+        original_tokens = self.bm.count_message_tokens(msg)
         for trimmed_msg in trimmed[:8]:
-            assert trimmed_msg.token_count < msg.token_count or (
-                trimmed_msg.token_count == self.bm.count_message_tokens(trimmed_msg)
-            )
+            assert trimmed_msg.token_count < original_tokens
 
     def test_usage_ratio(self):
         status = self.bm.check_budget([])
