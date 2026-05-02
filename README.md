@@ -113,7 +113,7 @@ from qwen_think import ComplexityRouter
 
 router = ComplexityRouter()
 decision = router.route("implement a REST API with authentication")
-# RouterDecision(complexity=COMPLEX, mode=THINK, preserve_thinking=True)
+# RouterDecision(complexity=MODERATE, mode=THINK, preserve_thinking=False)
 ```
 
 ## API Reference

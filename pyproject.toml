@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "qwen-think"
-version = "0.1.2"
+version = "0.1.3"
 description = "Thinking session manager for Qwen3.6: backend normalization, sampling parameter swap, and 128K context budget guard."
 readme = "README.md"
 license = "Apache-2.0"
