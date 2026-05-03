@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from qwen_think.backends import (
     DashScopeBackend,
@@ -145,7 +146,9 @@ class TestGetBackend:
                 get_backend(Backend.VLLM)
 
 
-@pytest.mark.parametrize("backend_cls", [VLLMBackend, DashScopeBackend, LlamaCppBackend])
+@pytest.mark.parametrize(
+    "backend_cls", [VLLMBackend, DashScopeBackend, LlamaCppBackend]
+)
 def test_detect_none_url_returns_zero(backend_cls):
     assert backend_cls().detect(None) == 0.0
 
