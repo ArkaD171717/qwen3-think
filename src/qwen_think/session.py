@@ -59,27 +59,39 @@ class ThinkingSession:
         self.auto_route = auto_route
         self.force_thinking = force_thinking
 
+        # Create sampling manager first so it can be injected into backends.
+        self.sampling_manager = SamplingManager()
+
         if backend is not None:
             if isinstance(backend, str):
                 backend = Backend(backend)
-            self._backend_instance: BaseBackend = get_backend(backend)
+            self._backend_instance: BaseBackend = get_backend(
+                backend, sampling_manager=self.sampling_manager
+            )
         else:
             base_url = getattr(client, "base_url", None)
             if base_url:
                 try:
-                    self._backend_instance = detect_backend(str(base_url))
+                    self._backend_instance = detect_backend(
+                        str(base_url),
+                        sampling_manager=self.sampling_manager,
+                    )
                     logger.info(
                         "Auto-detected backend: %s",
                         self._backend_instance.backend.value,
                     )
                 except ValueError:
-                    self._backend_instance = VLLMBackend()
+                    self._backend_instance = VLLMBackend(
+                        sampling_manager=self.sampling_manager,
+                    )
                     logger.warning(
                         "Could not auto-detect backend for %s, defaulting to vLLM",
                         base_url,
                     )
             else:
-                self._backend_instance = VLLMBackend()
+                self._backend_instance = VLLMBackend(
+                    sampling_manager=self.sampling_manager,
+                )
                 logger.warning("No base_url on client, defaulting to vLLM")
 
         self.budget_manager = BudgetManager(
@@ -87,7 +99,6 @@ class ThinkingSession:
             min_context=min_context,
             token_counter=token_counter,
         )
-        self.sampling_manager = SamplingManager()
         self.router = ComplexityRouter(force_thinking=force_thinking)
 
         self._messages: List[Message] = []

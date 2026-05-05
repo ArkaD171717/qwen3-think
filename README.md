@@ -33,6 +33,35 @@ session = ThinkingSession(client, backend="vllm", budget=200_000)
 response = session.chat("refactor this module", preserve=True)
 ```
 
+## Error Handling
+
+The library raises specific exceptions you should handle:
+
+```python
+from qwen_think import ThinkingSession
+
+session = ThinkingSession(client, backend="vllm", budget=200_000, min_context=128_000)
+
+try:
+    response = session.chat("refactor this module")
+except RuntimeError as e:
+    # Raised when the context budget is exhausted (used tokens leave
+    # less than min_context available). Trim history or start a new session.
+    print(f"Budget exhausted: {e}")
+except ValueError as e:
+    # Raised on unknown backend or unrecognized base_url during auto-detection.
+    # Pass backend= explicitly to avoid auto-detection.
+    print(f"Configuration error: {e}")
+```
+
+Check budget status before it becomes critical:
+
+```python
+status = session.budget_status
+if status.action.value == "warn":
+    session.trim_history(keep_recent=4)
+```
+
 ## The Three Backend Patterns
 
 | Backend | Flag Format | Notes |

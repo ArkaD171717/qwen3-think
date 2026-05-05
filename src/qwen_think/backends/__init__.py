@@ -5,7 +5,7 @@ qwen-think backends: Backend auto-detection and registry.
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Type
+from typing import Callable, Dict, List, Optional
 
 from ..types import Backend
 from .base import BaseBackend
@@ -15,7 +15,10 @@ from .vllm import OpenAIBackend, SGLangBackend, VLLMBackend
 
 logger = logging.getLogger("qwen-think.backends")
 
-_BACKEND_REGISTRY: Dict[Backend, Type[BaseBackend]] = {
+# Registry maps Backend enum -> callable that returns a BaseBackend instance.
+# For classes, calling them (e.g. VLLMBackend()) invokes __init__.
+# SGLangBackend and OpenAIBackend are factory functions returning VLLMBackend.
+_BACKEND_REGISTRY: Dict[Backend, Callable[..., BaseBackend]] = {
     Backend.VLLM: VLLMBackend,
     Backend.SGLANG: SGLangBackend,
     Backend.DASHSCOPE: DashScopeBackend,
@@ -24,16 +27,25 @@ _BACKEND_REGISTRY: Dict[Backend, Type[BaseBackend]] = {
 }
 
 
-def get_backend(backend: Backend, **kwargs) -> BaseBackend:
-    cls = _BACKEND_REGISTRY.get(backend)
-    if cls is None:
+def get_backend(
+    backend: Backend,
+    sampling_manager: Optional[object] = None,
+    **kwargs,
+) -> BaseBackend:
+    factory = _BACKEND_REGISTRY.get(backend)
+    if factory is None:
         raise ValueError(
             f"Unknown backend: {backend}. Supported: {list(_BACKEND_REGISTRY.keys())}"
         )
-    return cls(**kwargs)
+    if sampling_manager is not None:
+        kwargs["sampling_manager"] = sampling_manager
+    return factory(**kwargs)
 
 
-def detect_backend(base_url: str) -> BaseBackend:
+def detect_backend(
+    base_url: str,
+    sampling_manager: Optional[object] = None,
+) -> BaseBackend:
     """Auto-detect the backend from a base URL.
 
     Raises ValueError if no backend matches the URL -- callers should
@@ -41,8 +53,11 @@ def detect_backend(base_url: str) -> BaseBackend:
     """
     candidates: List[tuple[float, BaseBackend]] = []
 
-    for backend_type, cls in _BACKEND_REGISTRY.items():
-        instance = cls()
+    for _backend_type, factory in _BACKEND_REGISTRY.items():
+        kwargs = {}
+        if sampling_manager is not None:
+            kwargs["sampling_manager"] = sampling_manager
+        instance = factory(**kwargs)
         score = instance.detect(base_url)
         if score > 0:
             candidates.append((score, instance))

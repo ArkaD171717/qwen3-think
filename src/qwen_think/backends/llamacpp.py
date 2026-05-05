@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from ..types import Backend, BackendPayload, ThinkingMode
 from .base import BaseBackend
+
+if TYPE_CHECKING:
+    from ..sampling import SamplingManager
 
 
 class LlamaCppBackend(BaseBackend):
@@ -18,7 +21,12 @@ class LlamaCppBackend(BaseBackend):
         r"llama",
     ]
 
-    def __init__(self, server_enable_thinking: Optional[bool] = None) -> None:
+    def __init__(
+        self,
+        server_enable_thinking: Optional[bool] = None,
+        sampling_manager: Optional["SamplingManager"] = None,
+    ) -> None:
+        super().__init__(sampling_manager)
         self.server_enable_thinking = server_enable_thinking
 
     def build_payload(

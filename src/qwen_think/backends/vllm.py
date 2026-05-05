@@ -1,27 +1,51 @@
-"""vLLM and SGLang backend: nested chat_template_kwargs format.
+"""vLLM-compatible backends: nested chat_template_kwargs format.
 
 Always explicitly sets enable_thinking to fix vLLM semantic router #858
 (field removal instead of setting false).
+
+VLLMBackend is configurable via constructor args (backend enum, URL
+patterns, detect behavior) so SGLang and generic OpenAI-compatible
+servers reuse the same class without subclassing.
 """
 
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from ..types import Backend, BackendPayload, ThinkingMode
 from .base import BaseBackend
 
+if TYPE_CHECKING:
+    from ..sampling import SamplingManager
+
 
 class VLLMBackend(BaseBackend):
-    """Backend normalization for vLLM and SGLang."""
+    """Backend normalization for vLLM, SGLang, and OpenAI-compatible servers.
 
-    backend = Backend.VLLM
+    All three use the same nested ``chat_template_kwargs`` payload format.
+    Constructor args control which backend enum is reported and which URL
+    patterns are matched during auto-detection.
+    """
 
-    _VLLM_PATTERNS = [
-        r"vllm",
-        r":8000",  # vLLM default port
-    ]
+    def __init__(
+        self,
+        backend: Backend = Backend.VLLM,
+        detect_patterns: Optional[List[str]] = None,
+        detect_fallback: float = 0.3,
+        sampling_manager: Optional["SamplingManager"] = None,
+    ) -> None:
+        super().__init__(sampling_manager)
+        self.backend = backend
+        self._detect_patterns = (
+            detect_patterns
+            if detect_patterns is not None
+            else [
+                r"vllm",
+                r":8000",  # vLLM default port
+            ]
+        )
+        self._detect_fallback = detect_fallback
 
     def build_payload(
         self,
@@ -81,40 +105,47 @@ class VLLMBackend(BaseBackend):
         )
 
     def detect(self, base_url: Optional[str] = None) -> float:
-        """Score 0.0-1.0 for how likely this URL is a vLLM server.
+        """Score 0.0-1.0 for how likely this URL matches this backend.
 
-        0.6 = keyword/port match, 0.3 = generic /v1 endpoint.
-        DashScope scores 0.9 so it wins when both could match.
+        0.6 = keyword/port match, ``detect_fallback`` (default 0.3) for
+        generic /v1 endpoint. DashScope scores 0.9 so it wins when both
+        could match.
         """
         if base_url is None:
             return 0.0
 
         url_lower = base_url.lower()
-        for pattern in self._VLLM_PATTERNS:
+        for pattern in self._detect_patterns:
             if re.search(pattern, url_lower):
                 return 0.6
 
-        if "/v1" in url_lower:
-            return 0.3
+        if self._detect_fallback > 0.0 and "/v1" in url_lower:
+            return self._detect_fallback
 
         return 0.0
 
 
-class SGLangBackend(VLLMBackend):
-    """Same nested format as vLLM, different detection patterns."""
+def SGLangBackend(
+    sampling_manager: Optional["SamplingManager"] = None,
+) -> VLLMBackend:
+    """Create a VLLMBackend configured for SGLang (same payload, different detection)."""
+    return VLLMBackend(
+        backend=Backend.SGLANG,
+        detect_patterns=[r"sglang", r":30000"],
+        sampling_manager=sampling_manager,
+    )
 
-    backend = Backend.SGLANG
 
-    _VLLM_PATTERNS = [
-        r"sglang",
-        r":30000",  # SGLang default port
-    ]
+def OpenAIBackend(
+    sampling_manager: Optional["SamplingManager"] = None,
+) -> VLLMBackend:
+    """Create a VLLMBackend configured for generic OpenAI-compatible servers.
 
-
-class OpenAIBackend(VLLMBackend):
-    """Generic OpenAI-compatible servers. Same payload shape as vLLM."""
-
-    backend = Backend.OPENAI
-
-    def detect(self, base_url: Optional[str] = None) -> float:
-        return 0.0
+    Never auto-detected (returns 0.0 for all URLs); must be selected explicitly.
+    """
+    return VLLMBackend(
+        backend=Backend.OPENAI,
+        detect_patterns=[],
+        detect_fallback=0.0,
+        sampling_manager=sampling_manager,
+    )

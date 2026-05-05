@@ -3,16 +3,22 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from ..types import Backend, BackendPayload, ThinkingMode
 from .base import BaseBackend
+
+if TYPE_CHECKING:
+    from ..sampling import SamplingManager
 
 
 class DashScopeBackend(BaseBackend):
     """Backend normalization for Alibaba Cloud Model Studio (DashScope)."""
 
     backend = Backend.DASHSCOPE
+
+    def __init__(self, sampling_manager: Optional["SamplingManager"] = None) -> None:
+        super().__init__(sampling_manager)
 
     # URL patterns that suggest DashScope
     _DASHSCOPE_PATTERNS = [
@@ -54,7 +60,7 @@ class DashScopeBackend(BaseBackend):
                     "DashScope expects enable_thinking at the top level of "
                     "extra_body, NOT nested inside chat_template_kwargs. "
                     "The nested format is for vLLM/SGLang only. "
-                    "This backend has corrected it automatically."
+                    "This backend has applied the correction."
                 )
 
         if "messages" in kwargs:

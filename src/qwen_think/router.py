@@ -164,7 +164,7 @@ Respond with exactly one word: SIMPLE, MODERATE, or COMPLEX"""
 
             return self.fallback.classify(query, context)
 
-        except Exception as e:
+        except (OSError, ValueError, RuntimeError, TypeError, AttributeError) as e:
             logger.warning("LLM classification failed: %s. Falling back to rules.", e)
             return self.fallback.classify(query, context)
 
