@@ -1,5 +1,3 @@
-"""Sampling parameter swap on mode toggle."""
-
 from __future__ import annotations
 
 import logging
@@ -16,7 +14,6 @@ logger = logging.getLogger("qwen-think.sampling")
 
 
 class SamplingManager:
-    """Ensures sampling params always match the active thinking mode."""
 
     def __init__(
         self,

@@ -1,5 +1,3 @@
-"""vLLM/SGLang/OpenAI-compatible backends (nested chat_template_kwargs)."""
-
 from __future__ import annotations
 
 import re
@@ -13,7 +11,6 @@ if TYPE_CHECKING:
 
 
 class VLLMBackend(BaseBackend):
-    """Builds nested chat_template_kwargs payloads for vLLM/SGLang/OpenAI-compat."""
 
     def __init__(
         self,
@@ -41,7 +38,6 @@ class VLLMBackend(BaseBackend):
         sampling: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> BackendPayload:
-        """Build payload with enable_thinking nested in chat_template_kwargs."""
         enable_thinking = mode == ThinkingMode.THINK
 
         extra_body: Dict[str, Any] = {
@@ -109,7 +105,6 @@ class VLLMBackend(BaseBackend):
 def SGLangBackend(
     sampling_manager: Optional["SamplingManager"] = None,
 ) -> VLLMBackend:
-    """Create a VLLMBackend configured for SGLang (same payload, different detection)."""
     return VLLMBackend(
         backend=Backend.SGLANG,
         detect_patterns=[r"sglang", r":30000"],
@@ -120,7 +115,6 @@ def SGLangBackend(
 def OpenAIBackend(
     sampling_manager: Optional["SamplingManager"] = None,
 ) -> VLLMBackend:
-    """VLLMBackend for generic OpenAI-compatible servers (never auto-detected)."""
     return VLLMBackend(
         backend=Backend.OPENAI,
         detect_patterns=[],

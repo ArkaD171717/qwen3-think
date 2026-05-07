@@ -1,6 +1,3 @@
-"""Thinking session manager for Qwen3.6: backend normalization,
-sampling parameter swap, and 128K context budget guard."""
-
 from .backends import (
     BaseBackend,
     DashScopeBackend,

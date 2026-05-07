@@ -1,5 +1,3 @@
-"""Token budget tracking and conversation trimming."""
-
 from __future__ import annotations
 
 import logging
@@ -72,7 +70,6 @@ def truncate_old_messages(
 
 
 class BudgetManager:
-    """Tracks token usage and guards the 128K minimum context threshold."""
 
     def __init__(
         self,

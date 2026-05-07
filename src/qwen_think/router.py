@@ -1,5 +1,3 @@
-"""Query complexity classification and mode routing."""
-
 from __future__ import annotations
 
 import logging
@@ -70,7 +68,6 @@ _CODE_RE = [re.compile(p, re.IGNORECASE | re.MULTILINE) for p in _CODE_INDICATOR
 
 
 class RuleBasedClassifier:
-    """Classify query complexity using heuristic pattern matching."""
 
     def classify(self, query: str, context: Optional[List[str]] = None) -> Complexity:
         complexity_score = 0
@@ -115,7 +112,6 @@ class RuleBasedClassifier:
 
 
 class LLMClassifier:
-    """Classify query complexity using a small LLM, with rule-based fallback."""
 
     CLASSIFICATION_PROMPT = """Classify the following query into exactly one category:
 - SIMPLE: Single-turn, factual, short queries (e.g., "what is X?", "translate Y")
@@ -170,7 +166,6 @@ Respond with exactly one word: SIMPLE, MODERATE, or COMPLEX"""
 
 
 class ComplexityRouter:
-    """Routes queries to the appropriate thinking mode based on complexity."""
 
     COMPLEXITY_MAP = {
         Complexity.SIMPLE: (ThinkingMode.NO_THINK, False),

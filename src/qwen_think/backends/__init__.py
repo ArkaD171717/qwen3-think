@@ -1,5 +1,3 @@
-"""Backend registry and auto-detection."""
-
 from __future__ import annotations
 
 import logging
@@ -42,11 +40,6 @@ def detect_backend(
     base_url: str,
     sampling_manager: Optional[object] = None,
 ) -> BaseBackend:
-    """Auto-detect the backend from a base URL.
-
-    Raises ValueError if no backend matches the URL -- callers should
-    fall back to a default or ask the user to specify explicitly.
-    """
     candidates: List[tuple[float, BaseBackend]] = []
 
     for _backend_type, factory in _BACKEND_REGISTRY.items():

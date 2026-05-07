@@ -1,5 +1,3 @@
-"""llama.cpp backend (server-side flag only)."""
-
 from __future__ import annotations
 
 import re
@@ -13,7 +11,6 @@ if TYPE_CHECKING:
 
 
 class LlamaCppBackend(BaseBackend):
-    """Backend normalization for llama.cpp (server-side flag only)."""
 
     backend = Backend.LLAMACPP
 
@@ -36,7 +33,6 @@ class LlamaCppBackend(BaseBackend):
         sampling: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> BackendPayload:
-        """Build payload; warns if requested mode differs from server config."""
         enable_thinking = mode == ThinkingMode.THINK
 
         warnings: list[str] = []

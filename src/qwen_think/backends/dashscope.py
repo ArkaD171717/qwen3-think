@@ -1,5 +1,3 @@
-"""DashScope backend (top-level extra_body format)."""
-
 from __future__ import annotations
 
 import re
@@ -13,7 +11,6 @@ if TYPE_CHECKING:
 
 
 class DashScopeBackend(BaseBackend):
-    """Backend normalization for Alibaba Cloud Model Studio (DashScope)."""
 
     backend = Backend.DASHSCOPE
 
@@ -35,7 +32,6 @@ class DashScopeBackend(BaseBackend):
         sampling: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> BackendPayload:
-        """Build payload with enable_thinking at the top level of extra_body."""
         enable_thinking = mode == ThinkingMode.THINK
 
         extra_body: Dict[str, Any] = {

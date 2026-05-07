@@ -1,5 +1,3 @@
-"""ThinkingSession: top-level orchestrator for chat calls."""
-
 from __future__ import annotations
 
 import logging
@@ -38,7 +36,6 @@ _OPENAI_TOP_LEVEL = {
 
 
 class ThinkingSession:
-    """Manages Qwen3.6 thinking state across a conversation session."""
 
     def __init__(
         self,

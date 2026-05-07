@@ -1,5 +1,3 @@
-"""Enums, dataclasses, and constants."""
-
 from __future__ import annotations
 
 import enum
@@ -8,7 +6,6 @@ from typing import Any, Dict, List, Optional
 
 
 class Backend(str, enum.Enum):
-    """Supported inference backends for Qwen3.6."""
 
     VLLM = "vllm"
     SGLANG = "sglang"  # Same nesting as vLLM
@@ -18,14 +15,12 @@ class Backend(str, enum.Enum):
 
 
 class ThinkingMode(str, enum.Enum):
-    """Thinking mode for the current request / session."""
 
     THINK = "think"  # enable_thinking=True  (default for Qwen3.6)
     NO_THINK = "no_think"  # enable_thinking=False
 
 
 class Complexity(str, enum.Enum):
-    """Query complexity classification used by the router."""
 
     SIMPLE = "simple"
     MODERATE = "moderate"
@@ -33,7 +28,6 @@ class Complexity(str, enum.Enum):
 
 
 class BudgetAction(str, enum.Enum):
-    """Action taken by the budget manager when context is running low."""
 
     OK = "ok"  # Plenty of headroom
     WARN = "warn"  # Approaching 128K threshold
@@ -43,7 +37,6 @@ class BudgetAction(str, enum.Enum):
 
 @dataclass(frozen=True)
 class SamplingConfig:
-    """Sampling parameters that must stay in sync with the thinking mode."""
 
     temperature: float = 0.6
     top_p: float = 0.95
@@ -84,7 +77,6 @@ NON_THINKING_SAMPLING = SamplingConfig(
 
 @dataclass
 class BackendPayload:
-    """Normalized payload for a specific backend."""
 
     enable_thinking: bool = True
     preserve_thinking: bool = True
@@ -95,7 +87,6 @@ class BackendPayload:
 
 @dataclass
 class BudgetStatus:
-    """Context token budget status returned by the budget manager."""
 
     total_tokens: int = 0
     used_tokens: int = 0
@@ -117,7 +108,6 @@ class BudgetStatus:
 
 @dataclass
 class Message:
-    """A single conversation message with optional thinking content."""
 
     role: str  # "system" | "user" | "assistant" | "tool"
     content: str = ""
@@ -133,7 +123,6 @@ class Message:
 
 @dataclass
 class RouterDecision:
-    """Output of the complexity router for a given query."""
 
     complexity: Complexity
     mode: ThinkingMode

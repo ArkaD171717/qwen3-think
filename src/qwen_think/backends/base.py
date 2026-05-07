@@ -1,5 +1,3 @@
-"""Base class for backend payload builders."""
-
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -12,7 +10,6 @@ if TYPE_CHECKING:
 
 
 class BaseBackend(ABC):
-    """ABC for backend-specific payload construction."""
 
     backend: Backend
 
