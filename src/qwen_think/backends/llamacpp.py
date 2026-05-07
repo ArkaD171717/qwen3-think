@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 
 
 class LlamaCppBackend(BaseBackend):
-
     backend = Backend.LLAMACPP
 
     _LLAMACPP_PATTERNS = [

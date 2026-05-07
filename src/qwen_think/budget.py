@@ -70,7 +70,6 @@ def truncate_old_messages(
 
 
 class BudgetManager:
-
     def __init__(
         self,
         total_budget: int = 200_000,

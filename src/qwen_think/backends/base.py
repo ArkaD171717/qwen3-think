@@ -10,7 +10,6 @@ if TYPE_CHECKING:
 
 
 class BaseBackend(ABC):
-
     backend: Backend
 
     def __init__(self, sampling_manager: Optional["SamplingManager"] = None) -> None:

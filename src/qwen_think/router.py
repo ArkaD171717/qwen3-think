@@ -68,7 +68,6 @@ _CODE_RE = [re.compile(p, re.IGNORECASE | re.MULTILINE) for p in _CODE_INDICATOR
 
 
 class RuleBasedClassifier:
-
     def classify(self, query: str, context: Optional[List[str]] = None) -> Complexity:
         complexity_score = 0
 
@@ -112,7 +111,6 @@ class RuleBasedClassifier:
 
 
 class LLMClassifier:
-
     CLASSIFICATION_PROMPT = """Classify the following query into exactly one category:
 - SIMPLE: Single-turn, factual, short queries (e.g., "what is X?", "translate Y")
 - MODERATE: Multi-sentence queries requiring some reasoning
@@ -166,7 +164,6 @@ Respond with exactly one word: SIMPLE, MODERATE, or COMPLEX"""
 
 
 class ComplexityRouter:
-
     COMPLEXITY_MAP = {
         Complexity.SIMPLE: (ThinkingMode.NO_THINK, False),
         Complexity.MODERATE: (ThinkingMode.THINK, False),

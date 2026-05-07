@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional
 
 
 class Backend(str, enum.Enum):
-
     VLLM = "vllm"
     SGLANG = "sglang"  # Same nesting as vLLM
     DASHSCOPE = "dashscope"  # Alibaba Cloud Model Studio
@@ -15,20 +14,17 @@ class Backend(str, enum.Enum):
 
 
 class ThinkingMode(str, enum.Enum):
-
     THINK = "think"  # enable_thinking=True  (default for Qwen3.6)
     NO_THINK = "no_think"  # enable_thinking=False
 
 
 class Complexity(str, enum.Enum):
-
     SIMPLE = "simple"
     MODERATE = "moderate"
     COMPLEX = "complex"
 
 
 class BudgetAction(str, enum.Enum):
-
     OK = "ok"  # Plenty of headroom
     WARN = "warn"  # Approaching 128K threshold
     COMPRESS = "compress"  # Auto-compressed older messages
@@ -37,7 +33,6 @@ class BudgetAction(str, enum.Enum):
 
 @dataclass(frozen=True)
 class SamplingConfig:
-
     temperature: float = 0.6
     top_p: float = 0.95
     top_k: int = 20
@@ -77,7 +72,6 @@ NON_THINKING_SAMPLING = SamplingConfig(
 
 @dataclass
 class BackendPayload:
-
     enable_thinking: bool = True
     preserve_thinking: bool = True
     extra_body: Dict[str, Any] = field(default_factory=dict)
@@ -87,7 +81,6 @@ class BackendPayload:
 
 @dataclass
 class BudgetStatus:
-
     total_tokens: int = 0
     used_tokens: int = 0
     available_tokens: int = 0
@@ -108,7 +101,6 @@ class BudgetStatus:
 
 @dataclass
 class Message:
-
     role: str  # "system" | "user" | "assistant" | "tool"
     content: str = ""
     thinking_content: Optional[str] = None
@@ -123,7 +115,6 @@ class Message:
 
 @dataclass
 class RouterDecision:
-
     complexity: Complexity
     mode: ThinkingMode
     preserve_thinking: bool

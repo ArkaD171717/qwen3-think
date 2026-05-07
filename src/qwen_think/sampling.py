@@ -14,7 +14,6 @@ logger = logging.getLogger("qwen-think.sampling")
 
 
 class SamplingManager:
-
     def __init__(
         self,
         thinking: Optional[SamplingConfig] = None,

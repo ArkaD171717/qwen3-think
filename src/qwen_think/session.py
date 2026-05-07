@@ -36,7 +36,6 @@ _OPENAI_TOP_LEVEL = {
 
 
 class ThinkingSession:
-
     def __init__(
         self,
         client: Any,

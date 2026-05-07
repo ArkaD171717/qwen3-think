@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 
 
 class DashScopeBackend(BaseBackend):
-
     backend = Backend.DASHSCOPE
 
     def __init__(self, sampling_manager: Optional["SamplingManager"] = None) -> None:

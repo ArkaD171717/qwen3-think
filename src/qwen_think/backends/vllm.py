@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 
 
 class VLLMBackend(BaseBackend):
-
     def __init__(
         self,
         backend: Backend = Backend.VLLM,
