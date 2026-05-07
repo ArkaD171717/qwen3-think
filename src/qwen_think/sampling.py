@@ -1,4 +1,4 @@
-"""Sampling parameter management for thinking mode transitions."""
+"""Sampling parameter swap on mode toggle."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""DashScope backend: top-level enable_thinking in extra_body (not nested)."""
+"""DashScope backend (top-level extra_body format)."""
 
 from __future__ import annotations
 

@@ -1,16 +1,11 @@
-# Qwen3-Think
+# qwen-think
 
-**The Thinking Session Manager for Qwen3.6** (or any Qwen3+ model that uses enable_thinking) -- SDK + Router + Bug Fixes
+Python library for managing Qwen3.6's `enable_thinking` flag across backends (vLLM, SGLang, DashScope, llama.cpp), with sampling parameter sync and context budget tracking.
 
-Python library for managing Qwen3.6's thinking state across sessions, backends, and frameworks.
-
-## What It Solves
-
-1. **Backend Normalization** -- Qwen3.6's `enable_thinking` flag has three different invocation patterns across backends. This library normalizes them into a single API.
-
-2. **Sampling Parameter Swap** -- Qwen3.6 requires *different* sampling parameters for thinking vs. non-thinking mode. A router that flips `enable_thinking` without also swapping params produces silently degraded output.
-
-3. **Context Budget Guard** -- Qwen3.6 advises maintaining at least 128K tokens of context to preserve thinking capabilities. This library tracks and guards against silent degradation.
+Handles three things:
+- **Backend normalization** -- each backend expects `enable_thinking` in a different payload shape; this library builds the correct one.
+- **Sampling parameter swap** -- thinking and non-thinking modes need different sampling configs; the swap is atomic with the mode toggle.
+- **Context budget guard** -- tracks token usage and warns/trims/refuses when available context drops below 128K (Qwen3.6's recommended minimum for thinking quality).
 
 ## Installation
 
@@ -86,7 +81,7 @@ When `use_reasoning: false` is configured, the router *removes* the field instea
 
 ## Sampling Parameters
 
-Qwen3.6 requires different sampling params depending on thinking mode:
+Qwen3.6 uses different sampling params per mode:
 
 **Thinking mode:**
 ```python
@@ -94,21 +89,17 @@ temperature=0.6, top_p=0.95, top_k=20, min_p=0.0,
 presence_penalty=1.5, repetition_penalty=1.0
 ```
 
-**Instruct / non-thinking mode:**
+**Non-thinking mode:**
 ```python
 temperature=0.7, top_p=0.80, top_k=20, min_p=0.0,
 presence_penalty=1.5
 ```
 
-A router that flips `enable_thinking` without atomically swapping these params produces **silently degraded output** -- not incorrect, just suboptimal in ways that don't surface as errors.
+The library swaps these atomically when toggling `enable_thinking`.
 
 ## Context Budget
 
-Qwen3.6 advises maintaining a context length of at least **128K tokens** to preserve thinking capabilities. The `BudgetManager` tracks usage and:
-
-- **Warns** when approaching the threshold
-- **Auto-compresses** older messages when running low
-- **Refuses** to continue when below the minimum
+`BudgetManager` tracks token usage against a total budget and enforces a 128K minimum available context. Actions: warn, auto-compress older messages, or refuse.
 
 ```python
 session = ThinkingSession(client, budget=200_000, min_context=128_000)
@@ -120,7 +111,7 @@ status = session.budget_status
 
 ## Thinking Preservation
 
-Qwen3.6 introduces `preserve_thinking` -- a feature that retains thinking context across conversation history, improving reasoning quality for iterative development.
+`preserve_thinking` retains thinking content across conversation turns.
 
 ```python
 session = ThinkingSession(client, preserve_thinking=True)

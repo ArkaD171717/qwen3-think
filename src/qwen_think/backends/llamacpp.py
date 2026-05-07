@@ -1,4 +1,4 @@
-"""llama.cpp backend: server-side only thinking flag (no per-request control)."""
+"""llama.cpp backend (server-side flag only)."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Complexity classifier and thinking mode router."""
+"""Query complexity classification and mode routing."""
 
 from __future__ import annotations
 

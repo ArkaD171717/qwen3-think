@@ -1,12 +1,4 @@
-"""vLLM-compatible backends: nested chat_template_kwargs format.
-
-Always explicitly sets enable_thinking to fix vLLM semantic router #858
-(field removal instead of setting false).
-
-VLLMBackend is configurable via constructor args (backend enum, URL
-patterns, detect behavior) so SGLang and generic OpenAI-compatible
-servers reuse the same class without subclassing.
-"""
+"""vLLM/SGLang/OpenAI-compatible backends (nested chat_template_kwargs)."""
 
 from __future__ import annotations
 
@@ -21,12 +13,7 @@ if TYPE_CHECKING:
 
 
 class VLLMBackend(BaseBackend):
-    """Backend normalization for vLLM, SGLang, and OpenAI-compatible servers.
-
-    All three use the same nested ``chat_template_kwargs`` payload format.
-    Constructor args control which backend enum is reported and which URL
-    patterns are matched during auto-detection.
-    """
+    """Builds nested chat_template_kwargs payloads for vLLM/SGLang/OpenAI-compat."""
 
     def __init__(
         self,
@@ -105,12 +92,6 @@ class VLLMBackend(BaseBackend):
         )
 
     def detect(self, base_url: Optional[str] = None) -> float:
-        """Score 0.0-1.0 for how likely this URL matches this backend.
-
-        0.6 = keyword/port match, ``detect_fallback`` (default 0.3) for
-        generic /v1 endpoint. DashScope scores 0.9 so it wins when both
-        could match.
-        """
         if base_url is None:
             return 0.0
 
@@ -139,10 +120,7 @@ def SGLangBackend(
 def OpenAIBackend(
     sampling_manager: Optional["SamplingManager"] = None,
 ) -> VLLMBackend:
-    """Create a VLLMBackend configured for generic OpenAI-compatible servers.
-
-    Never auto-detected (returns 0.0 for all URLs); must be selected explicitly.
-    """
+    """VLLMBackend for generic OpenAI-compatible servers (never auto-detected)."""
     return VLLMBackend(
         backend=Backend.OPENAI,
         detect_patterns=[],

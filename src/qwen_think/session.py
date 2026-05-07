@@ -1,5 +1,4 @@
-"""ThinkingSession: main entry point wrapping conversation lifecycle,
-backend detection, thinking flag normalization, and budget tracking."""
+"""ThinkingSession: top-level orchestrator for chat calls."""
 
 from __future__ import annotations
 

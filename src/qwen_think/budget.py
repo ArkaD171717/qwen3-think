@@ -1,4 +1,4 @@
-"""Context token budget management with 128K minimum guard for Qwen3.6."""
+"""Token budget tracking and conversation trimming."""
 
 from __future__ import annotations
 

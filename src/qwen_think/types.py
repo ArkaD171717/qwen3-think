@@ -1,7 +1,4 @@
-"""
-qwen-think types: Enums, dataclasses, and type definitions for
-managing Qwen3.6 thinking state across sessions, backends, and frameworks.
-"""
+"""Enums, dataclasses, and constants."""
 
 from __future__ import annotations
 
@@ -87,11 +84,7 @@ NON_THINKING_SAMPLING = SamplingConfig(
 
 @dataclass
 class BackendPayload:
-    """Normalized payload ready to be sent to a specific backend.
-
-    The ``extra_body`` dict is backend-specific and already formatted
-    for the target (nested for vLLM/SGLang, top-level for DashScope).
-    """
+    """Normalized payload for a specific backend."""
 
     enable_thinking: bool = True
     preserve_thinking: bool = True

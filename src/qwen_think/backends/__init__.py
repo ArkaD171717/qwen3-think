@@ -1,6 +1,4 @@
-"""
-qwen-think backends: Backend auto-detection and registry.
-"""
+"""Backend registry and auto-detection."""
 
 from __future__ import annotations
 
@@ -15,9 +13,7 @@ from .vllm import OpenAIBackend, SGLangBackend, VLLMBackend
 
 logger = logging.getLogger("qwen-think.backends")
 
-# Registry maps Backend enum -> callable that returns a BaseBackend instance.
-# For classes, calling them (e.g. VLLMBackend()) invokes __init__.
-# SGLangBackend and OpenAIBackend are factory functions returning VLLMBackend.
+# Backend enum -> factory callable.
 _BACKEND_REGISTRY: Dict[Backend, Callable[..., BaseBackend]] = {
     Backend.VLLM: VLLMBackend,
     Backend.SGLANG: SGLangBackend,

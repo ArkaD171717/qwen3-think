@@ -1,4 +1,4 @@
-"""Abstract base class for backend normalization."""
+"""Base class for backend payload builders."""
 
 from __future__ import annotations
 
@@ -12,12 +12,7 @@ if TYPE_CHECKING:
 
 
 class BaseBackend(ABC):
-    """Abstract base class for backend-specific thinking flag normalization.
-
-    Accepts an optional ``SamplingManager`` via constructor injection.
-    When no explicit ``sampling`` dict is passed to ``_common_sampling()``,
-    the injected manager (or a lazily-created default) provides defaults.
-    """
+    """ABC for backend-specific payload construction."""
 
     backend: Backend
 
